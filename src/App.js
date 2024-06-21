@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import getWeb3 from './utils/web3';
+import web3 from './utils/web3';
+import Footer from './components/Footer';
 
 const Web3Info = ({ web3Instance, networkId, account, balance }) => (
   <div>
@@ -46,7 +47,6 @@ const App = () => {
         setBalance(instance.utils.fromWei(balance, 'ether'));
       }
       const networkId = await instance.eth.net.getId();
-      console.log('Raw Network ID:', networkId.toString()); // Debugging line
       setNetworkId(networkId.toString());
     } catch (err) {
       setError(err.message);
@@ -56,7 +56,7 @@ const App = () => {
   useEffect(() => {
     const initWeb3 = async () => {
       try {
-        const instance = await getWeb3();
+        const instance = await web3();
         setWeb3Instance(instance);
         await loadWeb3Data(instance);
 
@@ -100,6 +100,7 @@ const App = () => {
       ) : (
         <div>Loading Web3...</div>
       )}
+      <Footer />
     </div>
   );
 };
