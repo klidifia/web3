@@ -87,7 +87,7 @@ const App = () => {
 
   return (
     <div className="App">
-      <h1>Welcome to the App</h1>
+      <h1>Welcome to web3</h1>
       {web3Instance ? (
         <>
           <NetworkMessage networkId={networkId} />
