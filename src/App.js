@@ -13,6 +13,7 @@ const App = () => {
   const [networkId, setNetworkId] = useState(null);
   const [error, setError] = useState(null);
   const [noWallet, setNoWallet] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
 
   const loadWeb3Data = async (instance) => {
     try {
@@ -21,6 +22,9 @@ const App = () => {
         setAccount(accounts[0]);
         const balance = await instance.eth.getBalance(accounts[0]);
         setBalance(instance.utils.fromWei(balance, 'ether'));
+        setIsWalletConnected(true);
+      } else {
+        setIsWalletConnected(false);
       }
       const networkId = await instance.eth.net.getId();
       setNetworkId(networkId.toString());
@@ -56,9 +60,11 @@ const App = () => {
               instance.eth.getBalance(accounts[0]).then(balance => {
                 setBalance(instance.utils.fromWei(balance, 'ether'));
               });
+              setIsWalletConnected(true);
             } else {
               setAccount(null);
               setBalance(null);
+              setIsWalletConnected(false);
             }
           });
 
@@ -84,19 +90,15 @@ const App = () => {
         switchNetwork={switchNetwork}
         showNetworkSwitcher={!noWallet}
       />
-      {noWallet ? (
-        <div>No wallet detected. Please install a web3 wallet.</div>
-      ) : web3Instance ? (
+      {error ? (
+        <ErrorMessage error={error} />
+      ) : (
         <>
-          <NetworkMessage networkId={networkId} />
-          {(networkId === '1' || networkId === '56') && (
+          <NetworkMessage networkId={networkId} isWalletConnected={isWalletConnected} noWallet={noWallet} />
+          {web3Instance && (networkId === '1' || networkId === '56') && (
             <Web3Info web3Instance={web3Instance} networkId={networkId} account={account} balance={balance} />
           )}
         </>
-      ) : error ? (
-        <ErrorMessage error={error} />
-      ) : (
-        <div>Loading Web3...</div>
       )}
       <Footer />
     </div>

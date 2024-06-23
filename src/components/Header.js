@@ -1,4 +1,3 @@
-// Header.js
 import React from 'react';
 
 const Header = ({ currentNetwork, switchNetwork, showNetworkSwitcher }) => {
