@@ -1,35 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import getWeb3 from './utils/web3';
+import Header from './components/Header';
 import Footer from './components/Footer';
-
-const Web3Info = ({ web3Instance, networkId, account, balance }) => (
-  <div>
-    <h2>Web3 Instance:</h2>
-    <pre>{JSON.stringify({ currentProvider: web3Instance.currentProvider.constructor.name, networkId: networkId !== null ? networkId.toString() : 'N/A' }, null, 2)}</pre>
-    <h2>Account:</h2>
-    <pre>{account}</pre>
-    {balance !== null && (
-      <div>
-        <h2>Balance:</h2>
-        <pre>{balance} BNB</pre>
-      </div>
-    )}
-  </div>
-);
-
-const ErrorMessage = ({ error }) => (
-  <div>
-    <h2>Error:</h2>
-    <pre>{error}</pre>
-  </div>
-);
-
-const NetworkMessage = ({ networkId }) => (
-  <div>
-    <h2>Network:</h2>
-    <pre>{networkId === '56' ? 'Connected to BNB Chain' : `Please connect to BNB Chain (Current Network ID: ${networkId})`}</pre>
-  </div>
-);
+import Web3Info from './components/Web3Info';
+import NetworkMessage from './components/NetworkMessage';
+import ErrorMessage from './components/ErrorMessage';
 
 const App = () => {
   const [web3Instance, setWeb3Instance] = useState(null);
@@ -49,6 +24,18 @@ const App = () => {
       }
       const networkId = await instance.eth.net.getId();
       setNetworkId(networkId.toString());
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const switchNetwork = async (networkId) => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${parseInt(networkId, 10).toString(16)}` }],
+      });
+      window.location.reload();
     } catch (err) {
       setError(err.message);
     }
@@ -92,13 +79,17 @@ const App = () => {
 
   return (
     <div className="App">
-      <h1>Welcome to web3</h1>
+      <Header
+        currentNetwork={networkId || ''}
+        switchNetwork={switchNetwork}
+        showNetworkSwitcher={!noWallet}
+      />
       {noWallet ? (
         <div>No wallet detected. Please install a web3 wallet.</div>
       ) : web3Instance ? (
         <>
           <NetworkMessage networkId={networkId} />
-          {networkId === '56' && (
+          {(networkId === '1' || networkId === '56') && (
             <Web3Info web3Instance={web3Instance} networkId={networkId} account={account} balance={balance} />
           )}
         </>
