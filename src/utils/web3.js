@@ -9,15 +9,13 @@ const getWeb3 = () => {
           await window.ethereum.enable();
           resolve(web3);
         } catch (error) {
-          reject(error);
+          reject('User denied account access');
         }
       } else if (window.web3) {
         const web3 = window.web3;
         resolve(web3);
       } else {
-        const provider = new Web3.providers.HttpProvider('https://bsc-dataseed.binance.org/');
-        const web3 = new Web3(provider);
-        resolve(web3);
+        reject('No wallet detected');
       }
     });
   });

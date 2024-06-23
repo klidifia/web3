@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import web3 from './utils/web3';
+import getWeb3 from './utils/web3';
 import Footer from './components/Footer';
 
 const Web3Info = ({ web3Instance, networkId, account, balance }) => (
@@ -37,6 +37,7 @@ const App = () => {
   const [balance, setBalance] = useState(null);
   const [networkId, setNetworkId] = useState(null);
   const [error, setError] = useState(null);
+  const [noWallet, setNoWallet] = useState(false);
 
   const loadWeb3Data = async (instance) => {
     try {
@@ -56,27 +57,31 @@ const App = () => {
   useEffect(() => {
     const initWeb3 = async () => {
       try {
-        const instance = await web3();
-        setWeb3Instance(instance);
-        await loadWeb3Data(instance);
+        if (window.ethereum) {
+          const instance = await getWeb3();
+          setWeb3Instance(instance);
+          await loadWeb3Data(instance);
 
-        // Listen for account changes
-        instance.currentProvider.on('accountsChanged', (accounts) => {
-          if (accounts.length > 0) {
-            setAccount(accounts[0]);
-            instance.eth.getBalance(accounts[0]).then(balance => {
-              setBalance(instance.utils.fromWei(balance, 'ether'));
-            });
-          } else {
-            setAccount(null);
-            setBalance(null);
-          }
-        });
+          // Listen for account changes
+          window.ethereum.on('accountsChanged', (accounts) => {
+            if (accounts.length > 0) {
+              setAccount(accounts[0]);
+              instance.eth.getBalance(accounts[0]).then(balance => {
+                setBalance(instance.utils.fromWei(balance, 'ether'));
+              });
+            } else {
+              setAccount(null);
+              setBalance(null);
+            }
+          });
 
-        // Listen for network changes
-        instance.currentProvider.on('chainChanged', (chainId) => {
-          window.location.reload();
-        });
+          // Listen for network changes
+          window.ethereum.on('chainChanged', (chainId) => {
+            window.location.reload();
+          });
+        } else {
+          setNoWallet(true);
+        }
       } catch (err) {
         setError(err.message);
       }
@@ -88,7 +93,9 @@ const App = () => {
   return (
     <div className="App">
       <h1>Welcome to web3</h1>
-      {web3Instance ? (
+      {noWallet ? (
+        <div>No wallet detected. Please install a web3 wallet.</div>
+      ) : web3Instance ? (
         <>
           <NetworkMessage networkId={networkId} />
           {networkId === '56' && (
