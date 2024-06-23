@@ -14,6 +14,7 @@ const App = () => {
   const [error, setError] = useState(null);
   const [noWallet, setNoWallet] = useState(false);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadWeb3Data = async (instance) => {
     try {
@@ -30,18 +31,25 @@ const App = () => {
       setNetworkId(networkId.toString());
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const switchNetwork = async (networkId) => {
     try {
+      setLoading(true);
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: `0x${parseInt(networkId, 10).toString(16)}` }],
       });
-      window.location.reload();
+      // Reload the web3 instance and data after switching network
+      const instance = await getWeb3();
+      setWeb3Instance(instance);
+      await loadWeb3Data(instance);
     } catch (err) {
       setError(err.message);
+      setLoading(false);
     }
   };
 
@@ -74,9 +82,11 @@ const App = () => {
           });
         } else {
           setNoWallet(true);
+          setLoading(false);
         }
       } catch (err) {
         setError(err.message);
+        setLoading(false);
       }
     };
 
@@ -94,9 +104,15 @@ const App = () => {
         <ErrorMessage error={error} />
       ) : (
         <>
-          <NetworkMessage networkId={networkId} isWalletConnected={isWalletConnected} noWallet={noWallet} />
-          {web3Instance && (networkId === '1' || networkId === '56') && (
-            <Web3Info web3Instance={web3Instance} networkId={networkId} account={account} balance={balance} />
+          {loading ? (
+            <div>Loading...</div>
+          ) : (
+            <>
+              <NetworkMessage networkId={networkId} isWalletConnected={isWalletConnected} noWallet={noWallet} />
+              {web3Instance && (networkId === '1' || networkId === '56') && (
+                <Web3Info web3Instance={web3Instance} networkId={networkId} account={account} balance={balance} />
+              )}
+            </>
           )}
         </>
       )}
