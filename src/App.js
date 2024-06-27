@@ -3,7 +3,6 @@ import useWeb3 from './hooks/useWeb3';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Web3Info from './components/Web3Info';
-import NetworkMessage from './components/NetworkMessage';
 import ErrorMessage from './components/ErrorMessage';
 
 const App = () => {
@@ -34,10 +33,14 @@ const App = () => {
             <div>Loading...</div>
           ) : (
             <>
-              <NetworkMessage networkId={networkId} isWalletConnected={isWalletConnected} noWallet={noWallet} />
-              {web3Instance && (networkId === '1' || networkId === '56') && (
-                <Web3Info web3Instance={web3Instance} networkId={networkId} account={account} balance={balance} />
-              )}
+              <Web3Info
+                web3Instance={web3Instance}
+                networkId={networkId}
+                account={account}
+                balance={balance}
+                isWalletConnected={isWalletConnected}
+                noWallet={noWallet}
+              />
             </>
           )}
         </>
